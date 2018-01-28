@@ -4,6 +4,10 @@
 #include "PID.h"
 #include <math.h>
 
+#define K_P  0.13
+#define K_I  0 //0.00001
+#define K_D  11
+
 // for convenience
 using json = nlohmann::json;
 
@@ -28,12 +32,25 @@ std::string hasData(std::string s) {
   return "";
 }
 
+double calculate_steer_value(PID& pid, double cte, double speed, double angle)
+{  
+  static double prev = 0;
+  pid.UpdateError(cte);
+  double total_error = -pid.TotalError();
+  double steering = total_error*0.1 + prev*0.9; 
+  if(steering<-1) steering = -1;
+  else if(steering>1) steering = 1;
+  prev = steering;
+  return steering;
+}
+
 int main()
 {
   uWS::Hub h;
 
   PID pid;
   // TODO: Initialize the pid variable.
+  pid.Init(K_P, K_I, K_D);
 
   h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -50,7 +67,7 @@ int main()
           double cte = std::stod(j[1]["cte"].get<std::string>());
           double speed = std::stod(j[1]["speed"].get<std::string>());
           double angle = std::stod(j[1]["steering_angle"].get<std::string>());
-          double steer_value;
+          double steer_value  = calculate_steer_value(pid, cte, speed, angle);
           /*
           * TODO: Calcuate steering value here, remember the steering value is
           * [-1, 1].
@@ -63,7 +80,7 @@ int main()
 
           json msgJson;
           msgJson["steering_angle"] = steer_value;
-          msgJson["throttle"] = 0.3;
+          msgJson["throttle"] = 0.5;
           auto msg = "42[\"steer\"," + msgJson.dump() + "]";
           std::cout << msg << std::endl;
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
