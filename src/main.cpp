@@ -5,8 +5,8 @@
 #include <math.h>
 
 #define K_P  0.13
-#define K_I  0 //0.00001
-#define K_D  11
+#define K_I  0.0001
+#define K_D  12
 
 // for convenience
 using json = nlohmann::json;
