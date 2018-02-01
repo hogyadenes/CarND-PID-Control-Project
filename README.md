@@ -17,7 +17,7 @@ Normally, the "P" parameter should be able to utilise the whole controller inter
 
 The "D" parameter is responsible to smoothen the trajectory. The tuning of this was experimental. I checked the produced error components and found out that it should be somewhere in the 9-15 region. I ended up using 14.
 
-The throttling is controlled by the calculated steering angle. The equation for setting this is 1 - (3 * steering_angle)
+The throttling is controlled by the calculated steering angle. The equation for setting this is 1 - (3 * abs(steering_angle))
 This effectively limits the speed on hard turns but does not limit the speed on long straight parts.
 
 # Results
